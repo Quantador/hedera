@@ -1,0 +1,11 @@
+{
+	"name": "Pokemon",
+    "type": "image/jpg",
+	"description": "Pikachu",
+	"image": "https://cdn.pixabay.com/photo/2020/08/29/16/08/pikachu-5527377_640.jpg",
+	"properties": {
+		"PV": "100",
+		"attack": "Queue de fer",
+        "defense": "Bouclier"
+	}
+}
