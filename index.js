@@ -3,7 +3,11 @@ const {
     AccountId,
     PrivateKey,
     Client,
-    TokenCreateTransaction
+    TokenCreateTransaction,
+    TokenType,
+    TokenSupplyType,
+    Hbar,
+    TokenMintTransaction
   } = require("@hashgraph/sdk"); // v2.46.0
 
 async function main() {
@@ -22,8 +26,41 @@ async function main() {
         // Start your code here
 
         const nftCreateTransaction = new TokenCreateTransaction()
-            .setToken
+            .setTokenName("Pokemon")
+            .setTokenSymbol("PKM")
+            .setTokenType(TokenType.NonFungibleUnique)
+            .setDecimals(0)
+            .setInitialSupply(0)
+            .setSupplyKey(MY_PRIVATE_KEY)
+            .setTreasuryAccountId(MY_ACCOUNT_ID)
+            .setSupplyType(TokenSupplyType.Finite)
+            .setMaxSupply(100)
+            .freezeWith(client);
+
+        const nftCreateTxSign = await nftCreateTransaction.signWithOperator(client);
+        const nftCreateSubmit = await nftCreateTxSign.execute(client);
+        const nftCreateRx = await nftCreateSubmit.getReceipt(client);
+        console.log("Token ID: " + nftCreateRx.tokenId.toString());
     
+        const maxTransactionFee = new Hbar(20);
+
+        const CID = [
+            Buffer.from(
+              "ipfs://bafyreiao6ajgsfji6qsgbqwdtjdu5gmul7tv2v3pd6kjgcw5o65b2ogst4/metadata.json"
+            )
+        ];
+
+        const nftMintTransaction = new TokenMintTransaction()
+            .setTokenId(nftCreateRx.tokenId)
+            .setMetadata(CID)
+            .freezeWith(client);
+
+        const nftMintTxSign = await nftMintTransaction.signWithOperator(client);
+        const nftMintSubmit = await nftMintTxSign.execute(client);
+        const nftMintRx = await nftMintSubmit.getReceipt(client);
+
+        console.log("NFT Minted: " + nftMintRx.serials.toString());
+
     } catch (error) {
       console.error(error);
     } finally {
