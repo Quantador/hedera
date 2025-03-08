@@ -44,15 +44,11 @@ async function main() {
     
         const maxTransactionFee = new Hbar(20);
 
-        const CID = [
-            Buffer.from(
-              "ipfs://bafyreiao6ajgsfji6qsgbqwdtjdu5gmul7tv2v3pd6kjgcw5o65b2ogst4/metadata.json"
-            )
-        ];
+        const CID = "ipfs://QmUkgXEcWA1aGDVvCNvRvnL92iEW8Eq4Ww91pEFJ2Xp6pW"
 
         const nftMintTransaction = new TokenMintTransaction()
             .setTokenId(nftCreateRx.tokenId)
-            .setMetadata(CID)
+            .setMetadata([Buffer.from(CID)])
             .freezeWith(client);
 
         const nftMintTxSign = await nftMintTransaction.signWithOperator(client);
