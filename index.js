@@ -45,7 +45,7 @@ async function uploadImageToImgur(imagePath) {
     }
 }
 
-// Fonction pour extraire le texte de l'image via l'API Mistral OCR
+// Fonction pour extraire le texte de l'image via l'API Mistral Vision
 async function extractTextFromImage(imageUrl) {
     const client = new Mistral({ apiKey: MISTRAL_API_KEY });
 
@@ -131,11 +131,11 @@ async function fetchPokemonCardInfo(pokemonName, pokemonNumber) {
             console.log('HP:', pokemonHP);
 
             // Ici on récupère l'URL de l'image de la carte Pokémon
-            const cardImageUrl = card.images.small;
+            const cardImageUrl = card.images.large;
             console.log('Card Image URL:', cardImageUrl);
 
             // Créer un NFT avec les informations récupérées
-            await createNFT(pokemonName, pokemonHP, cardImageUrl);
+            await createNFT(pokemonName, card, cardImageUrl);
 
         } else {
             console.log('Aucune carte trouvée pour ce Pokémon.');
@@ -189,7 +189,7 @@ async function uploadMetadataToIPFS(jsonData) {
 }
 
 // Fonction pour créer le NFT
-async function createNFT(pokemonName, pokemonHP, cardImageUrl) {
+async function createNFT(pokemonName, pokemonJson, cardImageUrl) {
     let client;
     try {
         // Your account ID and private key from string value
@@ -207,9 +207,7 @@ async function createNFT(pokemonName, pokemonHP, cardImageUrl) {
             "name": pokemonName,
             "description": "A unique Pokémon NFT",
             "image": cardImageUrl,
-            "properties": {
-                "hp": pokemonHP,
-            },
+            "properties": pokemonJson
         };
 
         // Télécharger les métadonnées sur IPFS
