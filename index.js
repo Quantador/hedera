@@ -13,7 +13,6 @@ dotenv.config();
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 const TCG_API_URL = 'https://api.pokemontcg.io/v2/cards'; // URL de l'API TCG Pokémon
-
 const JWT = process.env.PINATA_JWT;
 
 // Fonction pour télécharger une image sur Imgur
@@ -124,18 +123,14 @@ async function fetchPokemonCardInfo(pokemonName, pokemonNumber) {
         if (response.data.data.length > 0) {
             // Récupérer la première carte correspondant à la recherche
             const card = response.data.data[0];
+
             console.log('Card Information:', card);
-            // Afficher des informations supplémentaires de la carte
-            const pokemonHP = card.hp; // Points de vie du Pokémon
-            console.log('Name:', card.name);
-            console.log('HP:', pokemonHP);
 
             // Ici on récupère l'URL de l'image de la carte Pokémon
             const cardImageUrl = card.images.large;
-            console.log('Card Image URL:', cardImageUrl);
 
             // Créer un NFT avec les informations récupérées
-            await createNFT(pokemonName, card, cardImageUrl);
+            await createNFT(card);
 
         } else {
             console.log('Aucune carte trouvée pour ce Pokémon.');
@@ -175,9 +170,10 @@ async function uploadMetadataToIPFS(jsonData) {
         fs.unlinkSync(filePath);
 
         if (response && response.data && response.data.cid) {
-            console.log("Upload successful:", response);
+            const cid = response.data.cid
+            console.log("IPFS CID:", cid);
             // Retourner le cid
-            return response.data.cid;
+            return cid;
         } else {
             console.error("Erreur dans la réponse de l'API", response);
             return null;
@@ -189,7 +185,7 @@ async function uploadMetadataToIPFS(jsonData) {
 }
 
 // Fonction pour créer le NFT
-async function createNFT(pokemonName, pokemonJson, cardImageUrl) {
+async function createNFT(pokemonJson) {
     let client;
     try {
         // Your account ID and private key from string value
@@ -204,31 +200,33 @@ async function createNFT(pokemonName, pokemonJson, cardImageUrl) {
 
         // Préparer les métadonnées pour le NFT
         const metadata = {
-            "name": pokemonName,
+            "name": pokemonJson.name,
             "description": "A unique Pokémon NFT",
-            "image": cardImageUrl,
+            "image": pokemonJson.images.large,
             "properties": pokemonJson
         };
 
+        console.log(metadata)
+
         // Télécharger les métadonnées sur IPFS
         const ipfsHash = await uploadMetadataToIPFS(metadata);
-
-        console.log("IPFS Hash:", ipfsHash);
+        const CID_link = `ipfs://${ipfsHash}`;
 
         const CID = [
           Buffer.from(
-            `ipfs://${ipfsHash}`
+            CID_link
           )
         ];
 
-        console.log("CID:", CID);
-        console.log("CID:", CID.toString());
-        console.log("size:", CID[0].length);
+        console.log("IPFS CID link:", CID_link);
+
+        const setName = pokemonJson.set.name;
+        const setSymbol = pokemonJson.set.ptcgoCode;
 
         // Start the NFT creation process
         const nftCreateTransaction = new TokenCreateTransaction()
-            .setTokenName("Pokemon NFT")
-            .setTokenSymbol("PKMNFT")
+            .setTokenName(setName)
+            .setTokenSymbol(setSymbol)
             .setTokenType(TokenType.NonFungibleUnique)
             .setDecimals(0)
             .setInitialSupply(0)
@@ -266,7 +264,7 @@ async function createNFT(pokemonName, pokemonJson, cardImageUrl) {
 }
 
 async function main() {
-    const imagePath = 'test3.jpg'; // Remplace ce chemin par le chemin réel de l'image
+    const imagePath = 'test2.jpg'; // Remplace ce chemin par le chemin réel de l'image
     const imageUrl = await uploadImageToImgur(imagePath);
 
     if (imageUrl) {
