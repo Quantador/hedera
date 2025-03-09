@@ -205,8 +205,11 @@ async function createNFT(pokemonName, pokemonHP, cardImageUrl) {
         // Préparer les métadonnées pour le NFT
         const metadata = {
             "name": pokemonName,
+            "description": "A unique Pokémon NFT",
             "image": cardImageUrl,
-            "hp": pokemonHP,
+            "properties": {
+                "hp": pokemonHP,
+            },
         };
 
         // Télécharger les métadonnées sur IPFS
@@ -216,9 +219,7 @@ async function createNFT(pokemonName, pokemonHP, cardImageUrl) {
 
         const CID = [
           Buffer.from(
-            //`brown-rare-cricket-368.mypinata.cloud/ipfs/${ipfsHash}/metadata.json`
-            //"ipfs://ipQma6VSq5Zao85YEh9ofeMqitNCkvtgzViVEyGM8XeisE5L/metadata.json"
-            `ipfs://${ipfsHash}/metadata.json`
+            `ipfs://${ipfsHash}`
           )
         ];
 
